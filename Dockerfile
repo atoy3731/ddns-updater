@@ -16,4 +16,4 @@ FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /app/ddns-updater ./
 
-CMD [ "./cloudflare-updater" ]
+CMD [ "./ddns-updater" ]

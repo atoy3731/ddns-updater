@@ -4,11 +4,11 @@ FROM golang:1.16.8-alpine3.14 AS builder
 WORKDIR /app
 
 COPY go.mod ./
-COPY src/ ./
+COPY src/* ./
 
 RUN apk update && apk upgrade && apk add --no-cache ca-certificates
 RUN update-ca-certificates
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o dns-updater ./src/
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o dns-updater .
 
 FROM scratch
 

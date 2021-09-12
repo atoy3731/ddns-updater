@@ -1,5 +1,7 @@
 ## DDNS Updater
 
+![Build Status](https://github.com/atoy3731/ddns-updater/actions/workflows/docker-publish.yaml/badge.svg)
+
 This docker image gives you the ability to update a Dynamic DNS record via the API to manage your DDNS on a homelab.
 
 The list of supported providers is currently:

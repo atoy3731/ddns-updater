@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ddns-updater-config
+  namespace: ddns-updater
+data:
+  # Set this to your supported provider
+  DNS_PROVIDER: "cloudflare"
+
+  # Cloudflare Configs
+  # CLOUDFLARE_ZONE: "example.com"
+  # CLOUDFLARE_RECORD: "*.example.com"
+
+  # NoIP Configs
+  # NOIP_HOSTNAME: "www.example.com"
+
+  # Dynu Configs
+  # DYNU_HOSTNAME: "www.example.com"

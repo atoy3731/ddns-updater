@@ -1,0 +1,31 @@
+version: "3.9"
+services:
+  ddns-updater:
+    container_name: ddns-updater
+    hostname: ddns-update
+    image: atoy3731/ddns-updater:1.0
+    environment:
+      # Provider ENV (update to your supported provider)
+      DNS_PROVIDER: cloudflare
+      
+      # Optional ENVs
+      # LOG_LEVEL: info
+      # INTERVAL_MINS: 5
+      # IP_URL: https://checkip.amazonaws.com/
+
+      # Providers
+      # Cloudflare
+      # CLOUDFLARE_ZONE: example.com
+      # CLOUDFLARE_RECORD: www.example.com
+      # CLOUDFLARE_TOKEN: abcdef12345
+
+      # NoIP
+      # NOIP_EMAIL: john@example.com
+      # NOIP_PASSWORD: password12345
+      # NOIP_HOSTNAME: www.example.com
+
+
+      # Dynu
+      # DYNU_USERNAME: john.doe
+      # DYNU_PASSWORD: password12345
+      # DYNU_HOSTNAME: www.example.com

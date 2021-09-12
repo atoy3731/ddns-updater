@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ddns-updater
+  namespace: ddns-updater
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: ddns-updater
+  template:
+    metadata:
+      labels:
+        app: ddns-updater
+    spec:
+      containers:
+      - name: ddns-updater
+        image: atoy3731/ddns-updater:1.0
+        envFrom:
+        - configMapRef:
+            name: ddns-updater-config
+        - secretRef:
+            name: ddns-updater-secret
+        imagePullPolicy: Always

@@ -33,9 +33,9 @@ func init() {
 		env.ValidateRequired(requiredEnvs)
 		env.ValidateOptional(optionalEnvs)
 
-		DynuUsername = requiredEnvs["DYNU_USERNAME"].Value.(string)
-		DynuPassword = requiredEnvs["DYNU_PASSWORD"].Value.(string)
-		DynuHostname = requiredEnvs["DYNU_HOSTNAME"].Value.(string)
+		DynuUsername = strings.TrimSpace(requiredEnvs["DYNU_USERNAME"].Value.(string))
+		DynuPassword = strings.TrimSpace(requiredEnvs["DYNU_PASSWORD"].Value.(string))
+		DynuHostname = strings.TrimSpace(requiredEnvs["DYNU_HOSTNAME"].Value.(string))
 	}
 }
 

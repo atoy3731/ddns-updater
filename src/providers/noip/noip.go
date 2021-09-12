@@ -33,9 +33,9 @@ func init() {
 		env.ValidateRequired(requiredEnvs)
 		env.ValidateOptional(optionalEnvs)
 
-		NoIpEmail = requiredEnvs["NOIP_EMAIL"].Value.(string)
-		NoIpPassword = requiredEnvs["NOIP_PASSWORD"].Value.(string)
-		NoIpHostname = requiredEnvs["NOIP_HOSTNAME"].Value.(string)
+		NoIpEmail = strings.TrimSpace(requiredEnvs["NOIP_EMAIL"].Value.(string))
+		NoIpPassword = strings.TrimSpace(requiredEnvs["NOIP_PASSWORD"].Value.(string))
+		NoIpHostname = strings.TrimSpace(requiredEnvs["NOIP_HOSTNAME"].Value.(string))
 	}
 }
 

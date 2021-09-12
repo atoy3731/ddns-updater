@@ -53,9 +53,9 @@ func init() {
 		env.ValidateRequired(requiredEnvs)
 		env.ValidateOptional(optionalEnvs)
 
-		CloudflareZone = requiredEnvs["CLOUDFLARE_ZONE"].Value.(string)
-		CloudflareRecord = requiredEnvs["CLOUDFLARE_RECORD"].Value.(string)
-		CloudflareToken = requiredEnvs["CLOUDFLARE_TOKEN"].Value.(string)
+		CloudflareZone = strings.TrimSpace(requiredEnvs["CLOUDFLARE_ZONE"].Value.(string))
+		CloudflareRecord = strings.TrimSpace(requiredEnvs["CLOUDFLARE_RECORD"].Value.(string))
+		CloudflareToken = strings.TrimSpace(requiredEnvs["CLOUDFLARE_TOKEN"].Value.(string))
 
 		CloudflareDnsTTL = optionalEnvs["CLOUDFLARE_DNS_TTL"].Value.(int)
 	}

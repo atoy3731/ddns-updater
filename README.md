@@ -43,6 +43,7 @@ Set your `DNS_PROVIDER` environment variable to `cloudflare` and set the followi
 | CLOUDFLARE_ZONE      | The Cloudflare zone you want to update. | example.com | Yes |
 | CLOUDFLARE_RECORD      | The Cloudflare record you want to update | *.example.com | Yes |
 | CLOUDFLARE_DNS_TTL | The TTL (in minutes) for the DNS entry. | 1 | No |
+| AUTO_CREATE | Whether to auto-create the record if it doesn't exit (true/false) | true | No |
 
 #### NoIP
 

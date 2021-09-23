@@ -36,6 +36,7 @@ var (
 	CloudflareRecord string
 	CloudflareToken  string
 	CloudflareDnsTTL int
+	AutoCreate       bool
 )
 
 func init() {
@@ -48,6 +49,7 @@ func init() {
 
 		optionalEnvs := map[string]*env.OptionalEnv{
 			"CLOUDFLARE_DNS_TTL": env.NewOptionalEnv("CLOUDFLARE_DNS_TTL", 1),
+			"AUTO_CREATE":        env.NewOptionalEnv("AUTO_CREATE", "true"),
 		}
 
 		env.ValidateRequired(requiredEnvs)
@@ -58,6 +60,12 @@ func init() {
 		CloudflareToken = strings.TrimSpace(requiredEnvs["CLOUDFLARE_TOKEN"].Value.(string))
 
 		CloudflareDnsTTL = optionalEnvs["CLOUDFLARE_DNS_TTL"].Value.(int)
+
+		if strings.ToLower(strings.TrimSpace(optionalEnvs["AUTO_CREATE"].Value.(string))) == "true" {
+			AutoCreate = true
+		} else {
+			AutoCreate = false
+		}
 	}
 }
 
@@ -121,38 +129,76 @@ func UpdateDns(current_ip string) {
 	defer resp.Body.Close()
 	body, _ = io.ReadAll(resp.Body)
 	json.Unmarshal(body, &cfResp)
-	recordId := cfResp.Result[0].Id
-	logging.DebugLogger.Println(fmt.Sprintf("Record ID for '%s' is '%s'", CloudflareRecord, recordId))
 
-	// Update record
-	var cfReq = CFRequest{}
-	cfReq.Type = "A"
-	cfReq.Name = CloudflareRecord
-	cfReq.Content = strings.TrimSpace(string(current_ip))
-	cfReq.TTL = CloudflareDnsTTL
-	cfReq.Proxied = false
+	// Create the record if 'CREATE' is true and record doesn't exist
+	if len(cfResp.Result) == 0 {
+		if AutoCreate {
+			// Create record
+			var cfReq = CFRequest{}
+			cfReq.Type = "A"
+			cfReq.Name = CloudflareRecord
+			cfReq.Content = strings.TrimSpace(string(current_ip))
+			cfReq.TTL = CloudflareDnsTTL
+			cfReq.Proxied = false
 
-	cfReqJson, _ := json.Marshal(cfReq)
-	url = fmt.Sprintf("https://api.cloudflare.com/client/v4/zones/%s/dns_records/%s", string(zoneId), string(recordId))
-	req, _ = http.NewRequest("PUT", url, bytes.NewBuffer([]byte(cfReqJson)))
-	addAuthHeader(req)
-	req.Header.Add("Content-type", "application/json")
+			cfReqJson, _ := json.Marshal(cfReq)
+			url = fmt.Sprintf("https://api.cloudflare.com/client/v4/zones/%s/dns_records", string(zoneId))
+			req, _ = http.NewRequest("POST", url, bytes.NewBuffer([]byte(cfReqJson)))
+			addAuthHeader(req)
+			req.Header.Add("Content-type", "application/json")
 
-	logging.DebugLogger.Println(fmt.Sprintf("Updating DNS record for '%s'", CloudflareRecord))
-	resp, resp_err = client.Do(req)
-	if resp_err != nil {
-		logging.ErrorLogger.Fatalln(resp_err)
-		return
-	} else if resp.StatusCode == 403 {
-		logging.ErrorLogger.Fatalln("[ERROR] Unauthorized. Check your Cloudflare token!")
-		return
-	} else if resp.StatusCode != 200 {
-		logging.ErrorLogger.Printf("[ERROR] Issue contacting Cloudflare")
-		b, _ := io.ReadAll(resp.Body)
-		logging.ErrorLogger.Fatalln(fmt.Sprintf("  -> Body: %s", string(b)))
-		return
+			logging.DebugLogger.Println(fmt.Sprintf("No record found. Creating record for '%s'", CloudflareRecord))
+			resp, resp_err = client.Do(req)
+			if resp_err != nil {
+				logging.ErrorLogger.Fatalln(resp_err)
+				return
+			} else if resp.StatusCode == 403 {
+				logging.ErrorLogger.Fatalln("[ERROR] Unauthorized. Check your Cloudflare token!")
+				return
+			} else if resp.StatusCode != 200 {
+				logging.ErrorLogger.Printf("[ERROR] Issue contacting Cloudflare")
+				b, _ := io.ReadAll(resp.Body)
+				logging.ErrorLogger.Fatalln(fmt.Sprintf("  -> Body: %s", string(b)))
+				return
+			}
+
+			logging.InfoLogger.Println(fmt.Sprintf("DNS Created (%s -> %s)", CloudflareRecord, strings.TrimSpace(string(string(current_ip)))))
+		} else {
+			logging.ErrorLogger.Fatalln(fmt.Sprintf("ERROR: Record '%s' doesn't exist and AUTO_CREATE is not true!", CloudflareRecord))
+		}
+	} else {
+		recordId := cfResp.Result[0].Id
+		logging.DebugLogger.Println(fmt.Sprintf("Record ID for '%s' is '%s'", CloudflareRecord, recordId))
+
+		// Update record
+		var cfReq = CFRequest{}
+		cfReq.Type = "A"
+		cfReq.Name = CloudflareRecord
+		cfReq.Content = strings.TrimSpace(string(current_ip))
+		cfReq.TTL = CloudflareDnsTTL
+		cfReq.Proxied = false
+
+		cfReqJson, _ := json.Marshal(cfReq)
+		url = fmt.Sprintf("https://api.cloudflare.com/client/v4/zones/%s/dns_records/%s", string(zoneId), string(recordId))
+		req, _ = http.NewRequest("PUT", url, bytes.NewBuffer([]byte(cfReqJson)))
+		addAuthHeader(req)
+		req.Header.Add("Content-type", "application/json")
+
+		logging.DebugLogger.Println(fmt.Sprintf("Updating DNS record for '%s'", CloudflareRecord))
+		resp, resp_err = client.Do(req)
+		if resp_err != nil {
+			logging.ErrorLogger.Fatalln(resp_err)
+			return
+		} else if resp.StatusCode == 403 {
+			logging.ErrorLogger.Fatalln("[ERROR] Unauthorized. Check your Cloudflare token!")
+			return
+		} else if resp.StatusCode != 200 {
+			logging.ErrorLogger.Printf("[ERROR] Issue contacting Cloudflare")
+			b, _ := io.ReadAll(resp.Body)
+			logging.ErrorLogger.Fatalln(fmt.Sprintf("  -> Body: %s", string(b)))
+			return
+		}
+
+		logging.InfoLogger.Println(fmt.Sprintf("DNS Updated (%s -> %s)", CloudflareRecord, strings.TrimSpace(string(string(current_ip)))))
 	}
-
-	logging.InfoLogger.Println(fmt.Sprintf("DNS Updated (%s -> %s)", CloudflareRecord, strings.TrimSpace(string(string(current_ip)))))
-
 }

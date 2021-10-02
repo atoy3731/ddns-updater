@@ -19,7 +19,7 @@ import (
 
 var (
 	IpUrl        string
-	ExistingIp   []byte
+	ExistingIp   string
 	IntervalMins int
 	DnsProvider  string
 
@@ -32,14 +32,14 @@ func init() {
 	logging.InfoLogger.Println(" DDNS Updater ")
 	logging.InfoLogger.Println("==============")
 
-	ExistingIp = []byte("N/A")
+	ExistingIp = "N/A"
 
 	requiredEnvs = map[string]*env.RequiredEnv{
 		"DNS_PROVIDER": env.NewRequiredEnv("DNS_PROVIDER"),
 	}
 
 	optionalEnvs = map[string]*env.OptionalEnv{
-		"INTERVAL_MINS": env.NewOptionalEnv("INTERVAL_MINS", 5),
+		"INTERVAL_MINS": env.NewOptionalEnv("INTERVAL_MINS", 1),
 		"IP_URL":        env.NewOptionalEnv("IP_URL", "https://checkip.amazonaws.com"),
 		"LOG_LEVEL":     env.NewOptionalEnv("LOG_LEVEL", "info"),
 	}
@@ -58,7 +58,7 @@ func check(e error) {
 	}
 }
 
-func getIp() []byte {
+func getIp() string {
 	logging.DebugLogger.Println(fmt.Sprintf("Getting IP from '%s'", IpUrl))
 	resp, err := http.Get(IpUrl)
 	if err != nil {
@@ -67,12 +67,13 @@ func getIp() []byte {
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	logging.DebugLogger.Println(fmt.Sprintf("Acquired IP: %s", strings.TrimSpace(string(body))))
-	return body
+	return strings.TrimSpace(string(body))
 }
 
-func isIpChanged(current_ip []byte) bool {
+func isIpChanged(current_ip string) bool {
 	if string(ExistingIp) != string(current_ip) {
 		logging.InfoLogger.Println(fmt.Sprintf("Updating IP (%s -> %s)", strings.TrimSpace(string(ExistingIp)), strings.TrimSpace(string(current_ip))))
+		ExistingIp = current_ip
 		return true
 	} else {
 		logging.DebugLogger.Println(fmt.Sprintf("IP (%s) hasn't changed. No update required.", strings.TrimSpace(string(current_ip))))

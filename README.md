@@ -1,4 +1,4 @@
-## DDNS Updater
+# DDNS Updater
 
 ![Build Status](https://github.com/atoy3731/ddns-updater/actions/workflows/docker-publish.yaml/badge.svg)
 

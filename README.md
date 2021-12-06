@@ -86,4 +86,4 @@ Set your `DNS_PROVIDER` environment variable to `dynu` and set the following EVs
     ```
 3. Update `secret.yaml` and `configmap.yaml` to your specific values.
 4. Ensure you're pointing at the right Kubernetes cluster: `kubectl cluster-info`
-5. Apply the manifests: `kubectl apply -f .`
+5. Apply the manifests: `kubectl apply -f .` 
